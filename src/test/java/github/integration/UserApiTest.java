@@ -7,6 +7,7 @@ import github.models.User;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.List;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class UserApiTest {
@@ -22,6 +22,7 @@ public class UserApiTest {
     private final UserClient userClient = new UserClient();
 
     @Test
+    @Tag("integration")
     void should_return_authenticated_user() {
         Response response = userClient.getAuthenticatedUser();
         ApiAssertions.assertStatusCode(response, 200);
@@ -34,6 +35,7 @@ public class UserApiTest {
     }
 
     @Test
+    @Tag("integration")
     void should_return_authenticated_user_repositories() {
         Response response = userClient.getAuthenticatedUserRepositories();
         ApiAssertions.assertStatusCode(response, 200);
@@ -44,10 +46,11 @@ public class UserApiTest {
 
         List<Repository> repositories = response.jsonPath().getList("", Repository.class);
         assertThat(repositories, is(not(empty())));
-        assertThat(repositories.get(0).getName(), is(not(emptyOrNullString())));
+        assertThat(repositories.getFirst().getName(), is(not(emptyOrNullString())));
     }
 
     @Test
+    @Tag("integration")
     void should_return_public_authenticated_user_repositories() {
         Response response = userClient.getAuthenticatedUserRepositories("public");
         ApiAssertions.assertStatusCode(response, 200);

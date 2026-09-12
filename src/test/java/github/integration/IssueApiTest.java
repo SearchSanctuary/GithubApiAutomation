@@ -4,6 +4,10 @@ import github.assertions.ApiAssertions;
 import github.clients.IssueClient;
 import github.models.Issue;
 import github.testdata.RepositoryTestData;
+import io.qameta.allure.Description;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 
@@ -19,6 +23,7 @@ public class IssueApiTest {
     public final IssueClient issueClient = new IssueClient();
 
     @Test
+    @Tag("integration")
     void should_return_issue() {
         Response response = issueClient.getIssues(
                 RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
@@ -34,6 +39,7 @@ public class IssueApiTest {
     }
 
     @Test
+    @Tag("integration")
     void should_return_open_issues() {
         Response response = issueClient.getIssuesByState(
                 RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
@@ -51,6 +57,7 @@ public class IssueApiTest {
     }
 
     @Test
+    @Tag("integration")
     void should_return_closed_issues() {
         Response response = issueClient.getIssuesByState(
                 RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
@@ -68,6 +75,8 @@ public class IssueApiTest {
     }
 
     @Test
+    @Tag("integration")
+    @Tag("negative")
     void should_return_404_for_nonexistent_issue() {
         Response response = issueClient.getIssueByIssueNumber(
                 RepositoryTestData.REPOSITORY_OWNER,
@@ -82,11 +91,13 @@ public class IssueApiTest {
     }
 
     @Nested
+    @Tag("lifecycle")
     class IssueLifecycleTests {
 
         private int createdIssueNumber;
         private boolean issueNeedsCleanup;
 
+        @Step("Create test issue")
         Response createIssue() {
             Response response = issueClient.createIssue(
                     RepositoryTestData.REPOSITORY_OWNER,
@@ -100,6 +111,7 @@ public class IssueApiTest {
             return response;
         }
 
+        @Step("Close issue")
         Response closeIssue() {
             return issueClient.closeIssue(
                     RepositoryTestData.REPOSITORY_OWNER,
@@ -108,6 +120,7 @@ public class IssueApiTest {
             );
         }
 
+        @Step("Retrieve created issue")
         Response getIssue() {
             return issueClient.getIssueByIssueNumber(
                     RepositoryTestData.REPOSITORY_OWNER,
@@ -116,6 +129,8 @@ public class IssueApiTest {
             );
         }
 
+        @Severity(SeverityLevel.CRITICAL)
+        @Description("Creates an issue in Github and verifies its details")
         @Test
         void should_create_issue() {
             Response response = createIssue();

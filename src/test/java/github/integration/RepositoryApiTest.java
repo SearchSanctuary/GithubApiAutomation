@@ -3,10 +3,10 @@ import github.assertions.ApiAssertions;
 import github.models.Repository;
 import github.testdata.RepositoryTestData;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import github.clients.RepositoryClient;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -18,6 +18,7 @@ public class RepositoryApiTest {
 
     public final RepositoryClient repositoryClient = new RepositoryClient();
     @Test
+    @Tag("integration")
     void should_return_github_repository() {
 
         Response response = repositoryClient.getRepository(
@@ -32,6 +33,8 @@ public class RepositoryApiTest {
     }
 
     @Test
+    @Tag("integration")
+    @Tag("negative")
     void should_return_404_for_non_existent_repository() {
         Response response = repositoryClient.getRepository(
                 RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
@@ -41,6 +44,7 @@ public class RepositoryApiTest {
     }
 
     @Test
+    @Tag("integration")
     void should_return_public_repository() {
         Response response = repositoryClient
                 .getRepository("octocat", "Hello-World");
@@ -51,6 +55,7 @@ public class RepositoryApiTest {
     }
 
     @Test
+    @Tag("integration")
     void should_return_correct_repository_owner() {
         Response response = repositoryClient
                 .getRepository("octocat", "Hello-World");
