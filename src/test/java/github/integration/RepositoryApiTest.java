@@ -1,7 +1,5 @@
-package github;
+package github.integration;
 import github.assertions.ApiAssertions;
-import github.clients.IssueClient;
-import github.models.Issue;
 import github.models.Repository;
 import github.testdata.RepositoryTestData;
 import io.restassured.response.Response;
@@ -14,8 +12,6 @@ import static org.hamcrest.Matchers.*;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
-
-import java.util.List;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class RepositoryApiTest {

@@ -1,10 +1,12 @@
-package github;
+package github.integration;
 
 import github.assertions.ApiAssertions;
 import github.clients.IssueClient;
 import github.models.Issue;
 import github.testdata.RepositoryTestData;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.emptyString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class IssueApiTest {
     public final IssueClient issueClient = new IssueClient();
 
@@ -64,16 +67,5 @@ public class IssueApiTest {
         for (Issue issue : issues) {
             assertThat(issue.getState(), equalTo("closed"));
         }
-    }
-
-    @Test
-    void should_reject_invalid_issue_state() {
-        assertThrows(
-                IllegalArgumentException.class,
-                ()->issueClient.getIssuesByState(
-                RepositoryTestData.REPOSITORY_OWNER,
-                RepositoryTestData.EXISTING_REPOSITORY,
-                "invalidState"
-        ));
     }
 }

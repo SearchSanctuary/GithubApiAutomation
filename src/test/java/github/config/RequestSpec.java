@@ -12,7 +12,7 @@ public class RequestSpec {
         if (TestConfig.GITHUB_TOKEN != null && !TestConfig.GITHUB_TOKEN.isBlank()){
             builder.addHeader(
                     "Authorization",
-                    "Bearer" + TestConfig.GITHUB_TOKEN);
+                    "Bearer " + TestConfig.GITHUB_TOKEN);
         }
 
         return builder.build();
