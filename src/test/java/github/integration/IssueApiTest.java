@@ -5,16 +5,14 @@ import github.clients.IssueClient;
 import github.models.Issue;
 import github.testdata.RepositoryTestData;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.List;
 
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.emptyString;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class IssueApiTest {
@@ -31,7 +29,7 @@ public class IssueApiTest {
 
         ApiAssertions.assertStatusCode(response, 200);
         assertThat(issues, is(not(empty())));
-        assertThat(issues.get(0).getTitle(), not(emptyString()));
+        assertThat(issues.getFirst().getTitle(), not(emptyString()));
         response.then().log().all();
     }
 
@@ -70,40 +68,115 @@ public class IssueApiTest {
     }
 
     @Test
-    void should_create_issue() {
-        Response response = issueClient.createIssue(
+    void should_return_404_for_nonexistent_issue() {
+        Response response = issueClient.getIssueByIssueNumber(
                 RepositoryTestData.REPOSITORY_OWNER,
                 RepositoryTestData.API_TEST_REPO,
-                "SDET ApIAutomationTestIssue");
-        Issue issue = response.as(Issue.class);
+                99999999
+        );
 
-        try {
+        ApiAssertions.assertStatusCode(response, 404);
+        response.then().assertThat()
+                .body(matchesJsonSchemaInClasspath("schemas/error-schema.json"));
+        assertThat(response.jsonPath().getString("message"), equalTo("Not Found"));
+    }
+
+    @Nested
+    class IssueLifecycleTests {
+
+        private int createdIssueNumber;
+        private boolean issueNeedsCleanup;
+
+        Response createIssue() {
+            Response response = issueClient.createIssue(
+                    RepositoryTestData.REPOSITORY_OWNER,
+                    RepositoryTestData.API_TEST_REPO,
+                    "SDET ApIAutomationTestIssue");
+            Issue issue = response.as(Issue.class);
+
+            createdIssueNumber = issue.getNumber();
+            issueNeedsCleanup = true;
+
+            return response;
+        }
+
+        Response closeIssue() {
+            return issueClient.closeIssue(
+                    RepositoryTestData.REPOSITORY_OWNER,
+                    RepositoryTestData.API_TEST_REPO,
+                    createdIssueNumber
+            );
+        }
+
+        Response getIssue() {
+            return issueClient.getIssueByIssueNumber(
+                    RepositoryTestData.REPOSITORY_OWNER,
+                    RepositoryTestData.API_TEST_REPO,
+                    createdIssueNumber
+            );
+        }
+
+        @Test
+        void should_create_issue() {
+            Response response = createIssue();
+            Issue issue = response.as(Issue.class);
+
             ApiAssertions.assertStatusCode(response, 201);
 
             assertThat(issue.getNumber(), is(greaterThan(0)));
             assertThat(issue.getTitle(), equalTo("SDET ApIAutomationTestIssue"));
             assertThat(issue.getState(), equalTo("open"));
-
-        } finally {
-            Response cleanupResponse = issueClient.closeIssue(
-                    RepositoryTestData.REPOSITORY_OWNER,
-                    RepositoryTestData.API_TEST_REPO,
-                    issue.getNumber()
-            );
-
-            ApiAssertions.assertStatusCode(cleanupResponse, 200);
-
-            Response finalResponse = issueClient.getIssueByIssueNumber(
-                    RepositoryTestData.REPOSITORY_OWNER,
-                    RepositoryTestData.API_TEST_REPO,
-                    issue.getNumber()
-            );
-
-            ApiAssertions.assertStatusCode(finalResponse, 200);
-
-            Issue finalIssue = finalResponse.as(Issue.class);
-            assertThat(finalIssue.getState(), equalTo("closed"));
         }
 
+        @Test
+        void should_close_issue() {
+            createIssue();
+            Response closeResponse = closeIssue();
+            ApiAssertions.assertStatusCode(closeResponse, 200);
+
+            Response response = getIssue();
+            ApiAssertions.assertStatusCode(response, 200);
+
+            Issue closedIssue = response.as(Issue.class);
+            assertThat(closedIssue.getState(), equalTo("closed"));
+
+            issueNeedsCleanup = false;
+        }
+
+        @Test
+        void should_reopen_issue() {
+            createIssue();
+            Response closeResponse = closeIssue();
+            ApiAssertions.assertStatusCode(closeResponse, 200);
+
+            Response reopenResponse = issueClient.reopenIssue(
+                    RepositoryTestData.REPOSITORY_OWNER,
+                    RepositoryTestData.API_TEST_REPO,
+                    createdIssueNumber
+            );
+            ApiAssertions.assertStatusCode(reopenResponse, 200);
+
+            Response response = getIssue();
+            ApiAssertions.assertStatusCode(response, 200);
+
+            Issue reopenedIssue = response.as(Issue.class);
+            assertThat(reopenedIssue.getState(), equalTo("open"));
+        }
+
+        @AfterEach
+        void tearDown() {
+            if (createdIssueNumber > 0 && issueNeedsCleanup) {
+                Response cleanupResponse = closeIssue();
+                ApiAssertions.assertStatusCode(cleanupResponse, 200);
+
+                Response finalResponse = getIssue();
+                ApiAssertions.assertStatusCode(finalResponse, 200);
+
+                Issue finalIssue = finalResponse.as(Issue.class);
+                assertThat(finalIssue.getState(), equalTo("closed"));
+            }
+        }
     }
+
+
 }

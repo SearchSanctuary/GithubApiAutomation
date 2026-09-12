@@ -46,4 +46,13 @@ public class IssueClient {
                 .when()
                 .patch("/repos/{owner}/{repo}/issues/{issueNumber}", owner, repo, issueNumber);
     }
+
+    public Response reopenIssue(String owner, String repo, int issueNumber) {
+        return given().spec(RequestSpec.getRequestSpec())
+                .body("""
+                        { "state" : "open" }
+                        """)
+                .when()
+                .patch("/repos/{owner}/{repo}/issues/{issueNumber}", owner, repo, issueNumber);
+    }
 }
