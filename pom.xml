@@ -63,6 +63,12 @@
             <artifactId>allure-junit5</artifactId>
             <version>2.29.1</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-launcher</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

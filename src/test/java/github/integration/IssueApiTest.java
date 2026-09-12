@@ -4,6 +4,7 @@ import github.assertions.ApiAssertions;
 import github.clients.IssueClient;
 import github.models.Issue;
 import github.testdata.RepositoryTestData;
+import github.utils.AllureAttachments;
 import io.qameta.allure.Description;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
@@ -83,7 +84,7 @@ public class IssueApiTest {
                 RepositoryTestData.API_TEST_REPO,
                 99999999
         );
-
+        AllureAttachments.attachResponse(response.asPrettyString());
         ApiAssertions.assertStatusCode(response, 404);
         response.then().assertThat()
                 .body(matchesJsonSchemaInClasspath("schemas/error-schema.json"));
@@ -129,6 +130,15 @@ public class IssueApiTest {
             );
         }
 
+        @Step("Reopen issue")
+        Response reopenIssue() {
+            return issueClient.reopenIssue(
+                    RepositoryTestData.REPOSITORY_OWNER,
+                    RepositoryTestData.API_TEST_REPO,
+                    createdIssueNumber
+            );
+        }
+
         @Severity(SeverityLevel.CRITICAL)
         @Description("Creates an issue in Github and verifies its details")
         @Test
@@ -164,11 +174,7 @@ public class IssueApiTest {
             Response closeResponse = closeIssue();
             ApiAssertions.assertStatusCode(closeResponse, 200);
 
-            Response reopenResponse = issueClient.reopenIssue(
-                    RepositoryTestData.REPOSITORY_OWNER,
-                    RepositoryTestData.API_TEST_REPO,
-                    createdIssueNumber
-            );
+            Response reopenResponse = reopenIssue();
             ApiAssertions.assertStatusCode(reopenResponse, 200);
 
             Response response = getIssue();
