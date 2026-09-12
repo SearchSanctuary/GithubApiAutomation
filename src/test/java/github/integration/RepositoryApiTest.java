@@ -21,12 +21,12 @@ public class RepositoryApiTest {
     void should_return_github_repository() {
 
         Response response = repositoryClient.getRepository(
-                        RepositoryTestData.REPOSITORY_OWNER,
+                        RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
                         RepositoryTestData.EXISTING_REPOSITORY);
 
         Repository repository = response.as(Repository.class);
 
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
         assertThat(repository.getName(), equalTo("Hello-World"));
         response.then().log().all();
     }
@@ -34,7 +34,7 @@ public class RepositoryApiTest {
     @Test
     void should_return_404_for_non_existent_repository() {
         Response response = repositoryClient.getRepository(
-                RepositoryTestData.REPOSITORY_OWNER,
+                RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
                 RepositoryTestData.NON_EXISTING_REPOSITORY);
 
         assertThat(response.getStatusCode(), equalTo(404));
@@ -46,7 +46,7 @@ public class RepositoryApiTest {
                 .getRepository("octocat", "Hello-World");
         Repository repository = response.as(Repository.class);
 
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
         assertThat(repository.isPrivateRepository(), equalTo(false));
     }
 
@@ -56,7 +56,7 @@ public class RepositoryApiTest {
                 .getRepository("octocat", "Hello-World");
         Repository repository = response.as(Repository.class);
 
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
         assertThat(repository.getOwner().getLogin(), equalTo("octocat"));
     }
 

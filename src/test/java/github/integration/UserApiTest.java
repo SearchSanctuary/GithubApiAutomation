@@ -24,7 +24,7 @@ public class UserApiTest {
     @Test
     void should_return_authenticated_user() {
         Response response = userClient.getAuthenticatedUser();
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
         response.then()
                 .assertThat()
                 .body(matchesJsonSchemaInClasspath("schemas/user-schema.json"));
@@ -36,7 +36,7 @@ public class UserApiTest {
     @Test
     void should_return_authenticated_user_repositories() {
         Response response = userClient.getAuthenticatedUserRepositories();
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
 
         response.then()
                 .assertThat()
@@ -50,7 +50,7 @@ public class UserApiTest {
     @Test
     void should_return_public_authenticated_user_repositories() {
         Response response = userClient.getAuthenticatedUserRepositories("public");
-        ApiAssertions.assertSuccessful(response);
+        ApiAssertions.assertStatusCode(response, 200);
 
         List<Repository> repositories = response.jsonPath().getList("", Repository.class);
         assertThat(repositories, is(not(empty())));

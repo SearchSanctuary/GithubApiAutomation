@@ -21,4 +21,29 @@ public class IssueClient {
                 .queryParam("state", state)
                 .when().get("/repos/{owner}/{repository}/issues", owner, repository);
     }
+
+    public Response getIssueByIssueNumber(String owner, String repository, int issueNumber) {
+        return given().spec(RequestSpec.getRequestSpec())
+                .when()
+                .get("/repos/{owner}/{repository}/issues/{issueNumber}",
+                        owner, repository, issueNumber);
+    }
+
+    public Response createIssue(String owner, String repository, String title) {
+        return given().spec(RequestSpec.getRequestSpec())
+                .body("""
+                        {"title" : "%s" }
+                        """.formatted(title))
+                .when()
+                .post("/repos/{owner}/{repository}/issues", owner, repository);
+    }
+
+    public Response closeIssue(String owner, String repo, int issueNumber) {
+        return given().spec(RequestSpec.getRequestSpec())
+                .body("""
+                        { "state" : "closed" }
+                        """)
+                .when()
+                .patch("/repos/{owner}/{repo}/issues/{issueNumber}", owner, repo, issueNumber);
+    }
 }

@@ -14,7 +14,7 @@ public class IssueClientTest {
         assertThrows(
                 IllegalArgumentException.class,
                 ()->issueClient.getIssuesByState(
-                        RepositoryTestData.REPOSITORY_OWNER,
+                        RepositoryTestData.OCTOCAT_REPOSITORY_OWNER,
                         RepositoryTestData.EXISTING_REPOSITORY,
                         "invalidState"
                 ));
