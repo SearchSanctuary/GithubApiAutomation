@@ -11,6 +11,8 @@ import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.util.List;
 
@@ -91,6 +93,7 @@ public class IssueApiTest {
         assertThat(response.jsonPath().getString("message"), equalTo("Not Found"));
     }
 
+    @Execution(ExecutionMode.SAME_THREAD)
     @Nested
     @Tag("lifecycle")
     class IssueLifecycleTests {
