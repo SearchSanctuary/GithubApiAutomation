@@ -273,7 +273,7 @@ It triggers on pushes and pull requests, so changes get automated feedback as so
 
 ## Test Reporting
 
-Allure JUnit 5 is wired in for test reporting, using metadata like:
+Allure JUnit 5 is integrated for test metadata and attachments, using metadata like:
 
 * Test descriptions
 * Severity
@@ -281,6 +281,26 @@ Allure JUnit 5 is wired in for test reporting, using metadata like:
 * Response attachments
 
 This gives more context when digging into a failed test.
+
+## Test Strategy
+
+I took a layered approach to testing here, where different test types are responsible for covering different risks rather than one style of test trying to do everything.
+
+**Unit Testing** — Unit tests cover client-side validation and logic that doesn't need to hit an external API (rejecting invalid issue states, rejecting invalid repository visibility values). These run fast and give immediate feedback the moment validation logic changes.
+
+**Integration Testing** — These talk to the real GitHub REST API to check HTTP status codes, response data, API behaviour, authentication, JSON response structure, and Java object deserialization. Gives confidence the framework works against the live service, not just mocked responses that might drift from reality.
+
+**Negative Testing** — Checks the system behaves properly when things go wrong: invalid client input, non-existent repositories/issues, expected API error responses, error response schema validation.
+
+**Contract Validation** — JSON Schema validation runs alongside functional assertions to make sure key API responses keep their expected structure, catching breaking changes a simple status code check would miss.
+
+**Stateful Testing** — The issue lifecycle tests look at behaviour across a sequence of state changes instead of testing each endpoint on its own — create, update, verify, clean up.
+
+**Test Isolation and Parallelisation** — Independent tests run concurrently to keep execution time down; anything sharing mutable state runs on the same thread so parallel execution doesn't introduce race conditions in the stateful tests.
+
+**Test Data and Cleanup** — State-changing tests run against a dedicated test repository and clean up after themselves, keeping data from piling up and the environment predictable.
+
+**CI Execution** — The main suite runs through Maven and is wired into GitHub Actions, so pushes and pull requests get automated feedback without anyone needing to run things manually.
 
 ## Design Decisions
 
