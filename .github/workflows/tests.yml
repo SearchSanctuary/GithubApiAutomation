@@ -20,4 +20,6 @@ jobs:
           cache: maven
 
       - name: Run tests
+        env:
+          GITHUB_TOKEN: ${{secrets.API_TEST_TOKEN}}
         run: mvn test
